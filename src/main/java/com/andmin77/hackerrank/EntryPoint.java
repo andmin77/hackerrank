@@ -7,17 +7,23 @@ import java.nio.charset.Charset;
 import java.nio.file.Files;
 
 public class EntryPoint {
+    
+    private static final String SFORMAT = "|%1$-10s|%2$-20s|%3$-20s|";
 
     public static void main(String[] args) throws FileNotFoundException, IOException  {
         System.err.println( Arrays.toString(args) );
+        boolean printDetails = false;
         String className = args[0];
         List<String> filtersKey = new ArrayList<>();
         if ( args.length > 1 ) {
             for ( int index = 1; index < args.length; index++ ) {
-                filtersKey.add(args[index]);
+                if ( args[index].equals("printDetails") ) {
+                    printDetails = true;
+                } else {
+                    filtersKey.add(args[index]);
+                }                
             }
         }
-        
         Class clazz = null;
         try {
             clazz = Class.forName(className);
@@ -59,6 +65,7 @@ public class EntryPoint {
                 output.put(key, file);
             }
         }
+        List<String> testCaseFailed = new ArrayList<>();
         PrintStream console = System.out;
         for ( String key : input.keySet() ) {
             if ( filtersKey.size() == 0 || filtersKey.contains(key) ) {
@@ -96,23 +103,36 @@ public class EntryPoint {
                         for ( int index = 0; index < outputExpectedLines.size(); index++ ) {
                             if ( !outputExpectedLines.get(index).equals( outputRealLines.get(index) ) ) {
                                 failed++;
-                                print("_", 20);
-                                System.err.println("[" + index + "] ");
-                                System.err.println( "" + outputExpectedLines.get(index) );
-                                System.err.println( "" + outputRealLines.get(index) );
-                                print("_", 20);
+                                if ( printDetails) {
+                                    if ( failed == 1 ) {
+                                        print("-", 54);
+                                        System.err.println( String.format(SFORMAT, "Row", "Your Output", "Expected Output") );
+                                        print("-", 54);
+                                    }
+                                    System.err.println( String.format(SFORMAT, index, outputRealLines.get(index), outputExpectedLines.get(index)) );
+                                }
                             }
                         }
                     } else {
                         System.err.println("Failed: expected = " + outputExpectedLines.size() + ", real = " + outputRealLines.size());
                     }
-                    if ( failed > 0 ) {
+                    if ( failed == 0 ) {
+                        System.err.println("OK");
+                    } else {
+                        testCaseFailed.add(key);
                         System.err.println("lines failed = " + failed);
                     }
                     print("*", 40);
                 }
             }
-        }       
+        }
+        print("_", 50);
+        if ( testCaseFailed.size() == 0 ) {
+            System.err.println("ALL TEST CASE SUCCESS!");
+        } else {
+            System.err.println(testCaseFailed.size() + " TEST CASE FAILED: " + Arrays.toString(testCaseFailed.toArray()) );
+        }
+        print("_", 50);
     }
     
     

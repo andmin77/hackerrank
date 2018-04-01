@@ -55,7 +55,6 @@ public class Solution {
             if ( ( j | req ) != req ) {
               continue;
             }
-            
             if ( ( Integer.bitCount( j ^ req) % 2 ) != 0 )
                 ans = ( ans - p[mp[j]] + MOD ) % MOD;
             else

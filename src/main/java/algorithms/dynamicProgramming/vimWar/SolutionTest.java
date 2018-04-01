@@ -1,4 +1,4 @@
-package algorithms.dynamicProgramming.aSuperHero;
+package algorithms.dynamicProgramming.vimWar;
 
 public class SolutionTest {
     public static void main(String[] args) throws Exception {

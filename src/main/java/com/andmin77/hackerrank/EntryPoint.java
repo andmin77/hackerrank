@@ -77,7 +77,7 @@ public class EntryPoint {
 
                     System.setIn(new FileInputStream(inputFile.getAbsolutePath()) );
                     List<String> outputExpectedLines = Files.readAllLines(outputFile.toPath(), Charset.defaultCharset());
-                    String consoleFilename = System.getProperty("java.io.tmpdir") + "/" + System.currentTimeMillis() + ".txt";
+                    String consoleFilename = System.getProperty("java.io.tmpdir") + UUID.randomUUID() + System.currentTimeMillis() + ".txt";
                     File consoleFile = new File(consoleFilename);
                     FileOutputStream fos = new FileOutputStream(consoleFile);
                     System.setOut(new PrintStream(fos));
@@ -92,11 +92,10 @@ public class EntryPoint {
                     } catch (InvocationTargetException ex) {
                         ex.printStackTrace();
                     }
-
+                    fos.flush();
                     fos.close();
                     System.setOut(console);
                     List<String> outputRealLines = Files.readAllLines(consoleFile.toPath(), Charset.defaultCharset());
-                    consoleFile.delete();
 
                     int failed = 0;
                     if ( outputExpectedLines.size() == outputRealLines.size() ) {

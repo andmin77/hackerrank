@@ -50,6 +50,7 @@ public class Solution {
     }
     
     public static void main(String[] args) {
+        poly.clear();
         Scanner scanner = new Scanner(System.in);
         int n = scanner.nextInt();
         int h = scanner.nextInt();

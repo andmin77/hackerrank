@@ -73,8 +73,9 @@ public class EntryPoint {
                 File outputFile = output.get(key);                        
 
                 if ( outputFile != null ) {
-                    System.err.println( "********* Execute Test Case " + key + " *********" );
-
+                    printLeft("*", 100, 10, "Start Execute Test Case " + key);
+                    //print("*", 50, "Start Execute Test Case " + key);
+                    long t1 = System.currentTimeMillis();
                     System.setIn(new FileInputStream(inputFile.getAbsolutePath()) );
                     List<String> outputExpectedLines = Files.readAllLines(outputFile.toPath(), Charset.defaultCharset());
                     String consoleFilename = System.getProperty("java.io.tmpdir") + UUID.randomUUID() + System.currentTimeMillis() + ".txt";
@@ -121,11 +122,15 @@ public class EntryPoint {
                         testCaseFailed.add(key);
                         System.err.println("lines failed = " + failed);
                     }
-                    print("*", 40);
+                    long t2 = System.currentTimeMillis();
+                    long delay = t2 - t1;
+                    printLeft("*", 100, 10, "End Execute Test Case " + key + ": " + delay + " [mills]");
+                    //print("*", 50, "End Execute Test Case " + key + ": " + delay + " [mills]");
+                    print("-", 100);
                 }
             }
         }
-        print("_", 50);
+        print("_", 100);
         if ( testCaseFailed.size() == 0 ) {
             System.err.println("ALL TEST CASE SUCCESS!");
         } else {
@@ -134,7 +139,26 @@ public class EntryPoint {
         print("_", 50);
     }
     
-    
+    private static void printLeft(String s, int n, int left, String message) {
+        int right = n - 2 - left - message.length();
+        if ( right < 0 ) {
+            right = 0;
+        }
+        System.err.println( String.format("%0" + left + "d", 0).replace("0", s) + " " + message + " " + String.format("%0" + right + "d", 0).replace("0", s));
+    }
+    private static void print(String s, int n, String message) {
+        int left = 0;
+        int right = 0;
+        if ( n > message.length() ) {
+            left = ( n - message.length() - 2 ) / 2;
+            right = left;
+            if ( message.length() % 2 == 1 ) {
+                right++;
+            }
+        }
+        
+        System.err.println( String.format("%0" + left + "d", 0).replace("0", s) + " " + message + " " + String.format("%0" + right + "d", 0).replace("0", s));
+    }
     private static void print(String s, int n) {
         System.err.println( String.format("%0" + n + "d", 0).replace("0", s) );
     }

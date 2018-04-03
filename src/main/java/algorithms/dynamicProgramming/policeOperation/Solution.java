@@ -24,7 +24,7 @@ public class Solution {
         }        
     }
     private static final int mx = 2000010;
-    private static ArrayList<Pair<Long, Long>> poly = new ArrayList<>();
+    private static ArrayList<Pair<Long, Long>> poly;
         
     private static void add( long idx, Pair<Long, Long> x ) {
         while ( poly.size() - idx > 1  ) {
@@ -50,7 +50,6 @@ public class Solution {
     }
     
     public static void main(String[] args) {
-        poly.clear();
         Scanner scanner = new Scanner(System.in);
         int n = scanner.nextInt();
         int h = scanner.nextInt();
@@ -61,6 +60,7 @@ public class Solution {
             for ( int i = 0; i < n; i++ ) {
                 x[i] = scanner.nextLong();
             }
+            poly = new ArrayList<>(mx);
             poly.add( Pair.of( -(x[n - 1] << 1L), x[n - 1] * x[n - 1] ) );
             for ( int i = n - 1 , idx = 0; i >= 0; i--) {
                 while ( (poly.size() - idx > 1) && (which( poly.get(idx), x[i] ) > which( poly.get(idx + 1), x[i] )) ) {
@@ -70,7 +70,7 @@ public class Solution {
                 if ( i > 0 ) {
                     add(idx, Pair.of( -(x[i - 1] << 1L), result + x[i - 1] * x[i - 1] ) );
                 } else {
-                    //add(idx, Pair.of( 0L, result) );
+                    add(idx, Pair.of( 0L, result) );
                 }
             }
         }

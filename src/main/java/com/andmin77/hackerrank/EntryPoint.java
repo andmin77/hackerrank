@@ -67,11 +67,12 @@ public class EntryPoint {
         }
         List<String> testCaseFailed = new ArrayList<>();
         PrintStream console = System.out;
+        long maxDelay = 0;
+        String testCaseWithMaxDelay = null;
         for ( String key : input.keySet() ) {
             if ( filtersKey.size() == 0 || filtersKey.contains(key) ) {
                 File inputFile = input.get(key);
-                File outputFile = output.get(key);                        
-
+                File outputFile = output.get(key);
                 if ( outputFile != null ) {
                     printLeft("*", 100, 10, "Start Execute Test Case " + key);
                     //print("*", 50, "Start Execute Test Case " + key);
@@ -124,6 +125,10 @@ public class EntryPoint {
                     }
                     long t2 = System.currentTimeMillis();
                     long delay = t2 - t1;
+                    if ( delay > maxDelay) {
+                        maxDelay = delay;
+                        testCaseWithMaxDelay = key;
+                    }
                     printLeft("*", 100, 10, "End Execute Test Case " + key + ": " + delay + " [mills]");
                     //print("*", 50, "End Execute Test Case " + key + ": " + delay + " [mills]");
                     print("-", 100);
@@ -132,11 +137,14 @@ public class EntryPoint {
         }
         print("_", 100);
         if ( testCaseFailed.size() == 0 ) {
-            System.err.println("ALL TEST CASE SUCCESS!");
+            print("*", 100, "ALL TEST CASE SUCCESS!");
         } else {
             System.err.println(testCaseFailed.size() + " TEST CASE FAILED: " + Arrays.toString(testCaseFailed.toArray()) );
         }
-        print("_", 50);
+        if ( testCaseWithMaxDelay != null ) {
+            print("*", 100, "maxDelay = " + maxDelay + " [mills] in testCase: " + testCaseWithMaxDelay);
+        }
+        print("_", 100);
     }
     
     private static void printLeft(String s, int n, int left, String message) {

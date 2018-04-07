@@ -6,7 +6,7 @@ public class Solution {
     
     private static final int MAXW = 100000;
     private static final int MAXN = 11;
-    private static final int MOD = 1000000007;
+    private static final int MOD = 100000000;
     private static final int L = 1400100;
 
     private static int N;

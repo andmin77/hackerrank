@@ -2,7 +2,7 @@ package dataStructures.advanced.networkAdministration;
 
 import java.util.*;
 
-public class Solution {
+public class SolutionFaster {
     
     //private static final int MAXSERVER = 8000;
     private static final int MAXADMIN = 100;
@@ -11,7 +11,7 @@ public class Solution {
     private static final int MAXSERVER = 100000;
     private static final int MAXLINK = 500000;
             
-    private static class Node {
+    private static class Node {        
         Node prx;
         Node lft;
         Node rgt;
@@ -24,7 +24,7 @@ public class Solution {
             this.clear();
         }
 
-        void clear() {
+        void clear() {            
             lft = rgt = prx = null;
             rev = false;
             sum = fx = 0;
@@ -83,49 +83,33 @@ public class Solution {
         }
     };
     
-    private static class Pair<A, B> {
+    private static class PairIntNode {
+        public int first;
+        public Node second;
 
-        public A first;
-        public B second;
-
-        private Pair(A first, B second) {
+        private PairIntNode(int first, Node second) {
             this.first = first;
             this.second = second;
         }
 
-        public static <A, B> Pair<A, B> of(A first, B second) {
-            return new Pair<A, B>(first, second);
+        public static PairIntNode of(int first, Node second) {
+            return new PairIntNode(first, second);
         }
         
         @Override
         public int hashCode() {
-            return 31 * hashcode(first) + hashcode(second);
+            return 31 * first + second.hashCode();
         }
-
-        // TODO : move this to a helper class.
-        private static int hashcode(Object o) {
-            return o == null ? 0 : o.hashCode();
-        }
-
+        
         @Override
         public boolean equals(Object obj) {
-            if (!(obj instanceof Pair))
+            if (!(obj instanceof PairIntNode))
                 return false;
             if (this == obj)
                 return true;
-            return equal(first, ((Pair<?, ?>) obj).first)
-                    && equal(second, ((Pair<?, ?>) obj).second);
+            PairIntNode pin = (PairIntNode) obj;
+            return ( this.first == pin.first && this.second == pin.second );
         }
-
-        // TODO : move this to a helper class.
-        private boolean equal(Object o1, Object o2) {
-            return o1 == o2 || (o1 != null && o1.equals(o2));
-        }
-
-        @Override
-        public String toString() {
-            return "(" + first + ", " + second + ')';
-        }        
     }
     
     private static void cleanReverse(Node px) {
@@ -294,7 +278,7 @@ public class Solution {
     }
 
     private static Lnk[][] table;
-    private static Map<Pair<Integer, Integer>, Pair<Integer, Node>> ehash;
+    private static PairIntNode[][] ehash;    
     private static Node[] frx;
 
     public static void main(String[] args) {
@@ -304,7 +288,7 @@ public class Solution {
                 table[i][j] = new Lnk();
             }
         }
-        ehash = new HashMap<>();
+
         frx = new Node[MAXLINK];
         
         Scanner scanner = new Scanner(System.in);
@@ -315,8 +299,12 @@ public class Solution {
         
         for ( int i = 0; i < M; ++i )
             frx[i] = new Node();
-        ehash.clear();
-        Pair<Integer, Integer> key;
+        int[] arrayOfA = new int[M];
+        int[] arrayOfB = new int[M];
+        int[] arrayOfJ = new int[M];
+        int maxA = Integer.MIN_VALUE;
+        int maxB = Integer.MIN_VALUE;
+        
         for ( int i = 0; i < M; ++i ) {
             int a = scanner.nextInt();
             int b = scanner.nextInt();
@@ -324,11 +312,29 @@ public class Solution {
             --a; 
             --b;
             --j;
-            key = Pair.of(a, b);
-            Node ptx = frx[i];
-            ehash.put(key, Pair.of(j + 1, ptx));
-            addEdge(a, b, j, ptx);            
+            arrayOfA[i] = a;
+            arrayOfB[i] = b;
+            arrayOfJ[i] = j;
+            if ( a > maxA ) {
+                maxA = a;
+            }
+            if ( b > maxB ) {
+                maxB = b;
+            }                        
         }
+        
+        ehash = new PairIntNode[maxA + 1][maxB + 1];
+        for ( int i = 0; i < M; ++i ) {
+            int a = arrayOfA[i];
+            int b = arrayOfB[i];
+            int j = arrayOfJ[i];
+            Node ptx = frx[i];            
+
+
+            ehash[a][b] = PairIntNode.of( j + 1 , ptx);
+            addEdge(a, b, j, ptx);
+        }
+        
         Node px, qx, tx, ux;
         int rpx, rqx, rtx, rux, x;
         for ( int tCount = 0; tCount < T; tCount ++ ) {
@@ -340,8 +346,7 @@ public class Solution {
             --b;
             if (cmd == 1) {
                 --i;
-                key = Pair.of(a, b);
-                Pair<Integer, Node> data = ehash.get(key);
+                PairIntNode data = ehash[a][b];
                 x = data != null ? data.first : 0;
                 if (x == 0) { //not found in edges storage
                     System.out.println("Wrong link");
@@ -370,9 +375,7 @@ public class Solution {
 
                 System.out.println("Assignment done");
             } else if (cmd == 2) {
-                key = Pair.of(a, b);
-
-                Pair<Integer, Node> data = ehash.get(key);
+                PairIntNode data = ehash[a][b];
 
                 px = data.second;
 
@@ -388,8 +391,7 @@ public class Solution {
                     a = b;
                     b = tmp;
                 }
-                key = Pair.of(a, b);
-                Pair<Integer, Node> data = ehash.get(key);
+                PairIntNode data = ehash[a][b];
                 
                 if (data != null && data.second != null && data.first == i + 1) {
                     System.out.println( data.second.fx + " security devices placed");

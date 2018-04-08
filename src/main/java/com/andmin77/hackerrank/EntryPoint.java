@@ -8,7 +8,7 @@ import java.nio.file.Files;
 
 public class EntryPoint {
     
-    private static final String SFORMAT = "|%1$-10s|%2$-20s|%3$-20s|";
+    private static final String SFORMAT = "|%1$-10s|%2$-43s|%3$-43s|";
 
     public static void main(String[] args) throws FileNotFoundException, IOException  {
         System.err.println( Arrays.toString(args) );
@@ -84,44 +84,47 @@ public class EntryPoint {
                     FileOutputStream fos = new FileOutputStream(consoleFile);
                     System.setOut(new PrintStream(fos));
 
+                    boolean isException = false;
                     String[] params = null;
                     try {
                         method.invoke(null, (Object) params);
-                    } catch (IllegalAccessException ex) {
+                    } catch (Exception ex) {                        
                         ex.printStackTrace();
-                    } catch (IllegalArgumentException ex) {
-                        ex.printStackTrace();
-                    } catch (InvocationTargetException ex) {
-                        ex.printStackTrace();
+                        isException = true;
                     }
                     fos.flush();
                     fos.close();
                     System.setOut(console);
-                    List<String> outputRealLines = Files.readAllLines(consoleFile.toPath(), Charset.defaultCharset());
+                    if ( !isException ) {
+                        List<String> outputRealLines = Files.readAllLines(consoleFile.toPath(), Charset.defaultCharset());
 
-                    int failed = 0;
-                    if ( outputExpectedLines.size() == outputRealLines.size() ) {
-                        for ( int index = 0; index < outputExpectedLines.size(); index++ ) {
-                            if ( !outputExpectedLines.get(index).equals( outputRealLines.get(index) ) ) {
-                                failed++;
-                                if ( printDetails) {
-                                    if ( failed == 1 ) {
-                                        print("-", 54);
-                                        System.err.println( String.format(SFORMAT, "Row", "Your Output", "Expected Output") );
-                                        print("-", 54);
+                        int failed = 0;
+                        if ( outputExpectedLines.size() == outputRealLines.size() ) {
+                            for ( int index = 0; index < outputExpectedLines.size(); index++ ) {
+                                if ( !outputExpectedLines.get(index).equals( outputRealLines.get(index) ) ) {
+                                    failed++;
+                                    if ( printDetails) {
+                                        if ( failed == 1 ) {
+                                            print("-", 100);
+                                            System.err.println( String.format(SFORMAT, "Row", "Your Output", "Expected Output") );
+                                            print("-", 100);
+                                        }
+                                        System.err.println( String.format(SFORMAT, index, outputRealLines.get(index), outputExpectedLines.get(index)) );
                                     }
-                                    System.err.println( String.format(SFORMAT, index, outputRealLines.get(index), outputExpectedLines.get(index)) );
                                 }
                             }
+                        } else {
+                            System.err.println("Failed: expected = " + outputExpectedLines.size() + ", real = " + outputRealLines.size());
+                        }
+                        if ( failed == 0 ) {
+                            System.err.println("OK");
+                        } else {
+                            testCaseFailed.add(key);
+                            System.err.println("lines failed = " + failed);
                         }
                     } else {
-                        System.err.println("Failed: expected = " + outputExpectedLines.size() + ", real = " + outputRealLines.size());
-                    }
-                    if ( failed == 0 ) {
-                        System.err.println("OK");
-                    } else {
                         testCaseFailed.add(key);
-                        System.err.println("lines failed = " + failed);
+                        System.err.println("EXIT FOR EXCEPTION!");
                     }
                     long t2 = System.currentTimeMillis();
                     long delay = t2 - t1;

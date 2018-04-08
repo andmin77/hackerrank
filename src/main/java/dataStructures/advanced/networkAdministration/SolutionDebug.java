@@ -146,106 +146,125 @@ public class SolutionDebug {
         public void fixSizeAndSum(Node px);
         
         public void cleanReverse(Node px);
+        
+        public Pair<Integer, Node> search(Pair<Integer, Integer> key);
     }
     
     
     
     private static class NetAdminDebuggingNodeOperation implements NodeOperation { 
         
-        private Map<String, Long> timeMapping;
+        private Map<String, Long> sumTimeMapping;
+        private Map<String, Long> countMapping;
         private NodeOperation nodeOperation;
+        private HashMap<Pair<Integer, Integer>, Pair<Integer, Node>> ehash;
         
-        public NetAdminDebuggingNodeOperation(NodeOperation nodeOperation) {
+        public NetAdminDebuggingNodeOperation(NodeOperation nodeOperation, HashMap<Pair<Integer, Integer>, Pair<Integer, Node>> ehash) {
             this.nodeOperation = nodeOperation;
-            timeMapping = new HashMap<>();
+            this.ehash = ehash;
+            sumTimeMapping = new HashMap<>();  
+            countMapping = new HashMap<>(); 
         }
         
         public void printReport() {
-            System.err.println( "-------------------------------------------" );
-            System.err.println( "| Function           |      Max Delay     |" );
-            System.err.println( "-------------------------------------------" );
-            for ( String functionName : this.timeMapping.keySet() ) {
-                long maxDelay = this.timeMapping.get(functionName);
-                System.err.println( String.format( "|%1$-20s|%2$-20s|", functionName, "" + maxDelay) );
+            System.err.println( "-------------------------------------------------------------------------------------" );
+            System.err.println( "| Function           |      Total Time    |      Count         |      Tot (sec)     |" );
+            System.err.println( "-------------------------------------------------------------------------------------" );
+            for ( String functionName : this.sumTimeMapping.keySet() ) {
+                long totalTime = this.sumTimeMapping.get(functionName);
+                long count = this.countMapping.get(functionName);
+                long tot = (long) ((double) totalTime / (double) count / Math.pow(10, 9));
+                System.err.println( String.format( "|%1$-20s|%2$-20s|%3$-20s|%4$-20s|", functionName, "" + totalTime, "" + count, "" + tot) );
             }
-            System.err.println( "-------------------------------------------" );
+            System.err.println( "-------------------------------------------------------------------------------------" );
         }                
 
-        private void updateTimeMapping(String key, long timeStart) {
-            long timeStop = System.currentTimeMillis();
+        private void update(String key, long timeStart) {
+            long timeStop = System.nanoTime();            
             long delay = timeStop - timeStart;
-            if ( timeMapping.get(key) == null ) {
-                timeMapping.put(key, delay);
-            } else {
-                long max = timeMapping.get(key);
-                if ( delay > max ) {
-                    timeMapping.put(key, delay);
-                }
+            if ( countMapping.get(key) == null ) {
+                countMapping.put(key, 0L);
             }
+            long count = countMapping.get(key) + 1;
+            countMapping.put(key, count);
+            
+            if ( sumTimeMapping.get(key) == null ) {
+                sumTimeMapping.put(key, delay);
+            } 
+            long partial = sumTimeMapping.get(key) + delay;
+            sumTimeMapping.put(key, partial);
         }
         @Override
         public void splay(Node px) {
-            long t1 = System.currentTimeMillis();
+            long t1 = System.nanoTime();
             nodeOperation.splay(px);            
-            updateTimeMapping("splay", t1);            
+            update("splay", t1);            
         }
 
         @Override
         public void makeLast(Node x) {
-            long t1 = System.currentTimeMillis();
+            long t1 = System.nanoTime();
             nodeOperation.makeLast(x);
-            updateTimeMapping("makeLast", t1); 
+            update("makeLast", t1); 
         }
 
         @Override
         public void makeFirst(Node x) {
-            long t1 = System.currentTimeMillis();
+            long t1 = System.nanoTime();
             nodeOperation.makeFirst(x);
-            updateTimeMapping("makeFirst", t1); 
+            update("makeFirst", t1); 
         }
 
         @Override
         public void addEdge(int a, int b, int i, Node px) {
-            long t1 = System.currentTimeMillis();
+            long t1 = System.nanoTime();
             nodeOperation.addEdge(a, b, i, px); 
-            updateTimeMapping("addEdge", t1);
+            update("addEdge", t1);
         }
 
         @Override
         public void delEdge(int a, int b, int x, Node px) {
-            long t1 = System.currentTimeMillis();
+            long t1 = System.nanoTime();
             nodeOperation.delEdge(a, b, x, px);
-            updateTimeMapping("delEdge", t1);            
+            update("delEdge", t1);            
         }
 
         @Override
         public boolean connected(int a, int b, int x) {
-            long t1 = System.currentTimeMillis();
+            long t1 = System.nanoTime();
             boolean result = nodeOperation.connected(a, b, x);
-            updateTimeMapping("connected", t1); 
+            update("connected", t1); 
             return result;
         }
 
         @Override
         public int xrank(Node px) {
-            long t1 = System.currentTimeMillis();
+            long t1 = System.nanoTime();
             int result = nodeOperation.xrank(px);
-            updateTimeMapping("xrank", t1); 
+            update("xrank", t1); 
             return result;
         }
 
         @Override
         public void fixSizeAndSum(Node px) {
-            long t1 = System.currentTimeMillis();
+            long t1 = System.nanoTime();
             nodeOperation.fixSizeAndSum(px);
-            updateTimeMapping("fixSizeAndSum", t1); 
+            update("fixSizeAndSum", t1); 
         }
 
         @Override
         public void cleanReverse(Node px) {
-            long t1 = System.currentTimeMillis();
+            long t1 = System.nanoTime();
             nodeOperation.cleanReverse(px);
-            updateTimeMapping("cleanReverse", t1);
+            update("cleanReverse", t1);
+        }
+
+        @Override
+        public Pair<Integer, Node> search(Pair<Integer, Integer> key) {
+            long t1 = System.nanoTime();
+            Pair<Integer, Node> result = nodeOperation.search(key);            
+            update("search", t1);
+            return result;
         }
         
     }
@@ -415,10 +434,15 @@ public class SolutionDebug {
             splay(px);
             return px.lft != null ? px.lft.size : 0;
         }
+
+        @Override
+        public Pair<Integer, Node> search(Pair<Integer, Integer> key) {
+            return ehash.get(key);
+        }
     }
 
     private static Lnk[][] table;
-    private static Map<Pair<Integer, Integer>, Pair<Integer, Node>> ehash;
+    private static HashMap<Pair<Integer, Integer>, Pair<Integer, Node>> ehash;
     private static Node[] frx;
 
     public static void main(String[] args) {
@@ -441,7 +465,7 @@ public class SolutionDebug {
             frx[i] = new Node();
         ehash.clear();
         
-        NodeOperation nodeOperation = new NetAdminDebuggingNodeOperation( new NetAdminNodeOperation() );
+        NodeOperation nodeOperation = new NetAdminDebuggingNodeOperation( new NetAdminNodeOperation(), ehash );
         Pair<Integer, Integer> key;
         for ( int i = 0; i < M; ++i ) {
             int a = scanner.nextInt();
@@ -467,7 +491,8 @@ public class SolutionDebug {
             if (cmd == 1) {
                 --i;
                 key = new Pair(a, b);
-                Pair<Integer, Node> data = ehash.get(key);
+                Pair<Integer, Node> data = nodeOperation.search(key);
+                
                 x = data != null ? data.first: 0;
                 if (x == 0) { //not found in edges storage
                     System.out.println("Wrong link");
@@ -498,7 +523,7 @@ public class SolutionDebug {
             } else if (cmd == 2) {
                 key = new Pair(a, b);
 
-                Pair<Integer, Node> data = ehash.get(key);
+                Pair<Integer, Node> data = nodeOperation.search(key);
 
                 px = data.second;
 
@@ -515,7 +540,7 @@ public class SolutionDebug {
                     b = tmp;
                 }
                 key = new Pair(a, b);
-                Pair<Integer, Node> data = ehash.get(key);
+                Pair<Integer, Node> data = nodeOperation.search(key);
                 
                 if (data != null && data.second != null && data.first == i + 1) {
                     System.out.println( data.second.fx + " security devices placed");

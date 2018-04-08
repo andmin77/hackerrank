@@ -294,7 +294,8 @@ public class Solution {
     }
 
     private static Lnk[][] table;
-    private static Map<Pair<Integer, Integer>, Pair<Integer, Node>> ehash;
+    private static HashMap<Pair<Integer, Integer>, Pair<Integer, Node>> ehash;
+    
     private static Node[] frx;
 
     public static void main(String[] args) {
@@ -305,6 +306,7 @@ public class Solution {
             }
         }
         ehash = new HashMap<>();
+        
         frx = new Node[MAXLINK];
         
         Scanner scanner = new Scanner(System.in);

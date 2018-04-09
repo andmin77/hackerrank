@@ -299,6 +299,7 @@ public class Solution {
     private static Node[] frx;
 
     public static void main(String[] args) {
+        
         table = new Lnk[MAXSERVER][MAXADMIN];
         for ( int i = 0; i < MAXSERVER; i++ ) {
             for ( int j = 0; j < MAXADMIN; j++ ) {

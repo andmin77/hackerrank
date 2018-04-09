@@ -168,12 +168,12 @@ public class SolutionDebug {
         
         public void printReport() {
             System.err.println( "-------------------------------------------------------------------------------------" );
-            System.err.println( "| Function           |      Total Time    |      Count         |      Tot (sec)     |" );
+            System.err.println( "| Function           |      Total Time    |      Count         |      Tot (mills)    |" );
             System.err.println( "-------------------------------------------------------------------------------------" );
             for ( String functionName : this.sumTimeMapping.keySet() ) {
                 long totalTime = this.sumTimeMapping.get(functionName);
                 long count = this.countMapping.get(functionName);
-                long tot = (long) ((double) totalTime / (double) count / Math.pow(10, 9));
+                long tot = (long) ( (double) totalTime / Math.pow(10, 6));
                 System.err.println( String.format( "|%1$-20s|%2$-20s|%3$-20s|%4$-20s|", functionName, "" + totalTime, "" + count, "" + tot) );
             }
             System.err.println( "-------------------------------------------------------------------------------------" );
@@ -467,6 +467,7 @@ public class SolutionDebug {
         
         NodeOperation nodeOperation = new NetAdminDebuggingNodeOperation( new NetAdminNodeOperation(), ehash );
         Pair<Integer, Integer> key;
+        long t1 = System.currentTimeMillis();
         for ( int i = 0; i < M; ++i ) {
             int a = scanner.nextInt();
             int b = scanner.nextInt();
@@ -479,6 +480,9 @@ public class SolutionDebug {
             ehash.put(key, new Pair(j + 1, ptx));
             nodeOperation.addEdge(a, b, j, ptx);            
         }
+        long t2 = System.currentTimeMillis();
+        long delay = t2 - t1;
+        System.err.println(" *** delay insert: " + delay + " [mills] *** ");
         Node px, qx, tx, ux;
         int rpx, rqx, rtx, rux, x;
         for ( int tCount = 0; tCount < T; tCount ++ ) {

@@ -2,6 +2,6 @@
 #
 #
 git add .
-git commit -m 'commit' --allow-empty
+git commit --allow-empty -m 'commit' 
 git push --all
 

@@ -20,7 +20,7 @@ public class Solution {
             long k = scanner.nextLong();
             
             array[a] += k;
-            
+
             if ( b + 1 <= n ) {
                 array[b + 1] -= k;
             }

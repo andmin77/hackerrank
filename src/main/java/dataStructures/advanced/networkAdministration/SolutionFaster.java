@@ -2,12 +2,8 @@ package dataStructures.advanced.networkAdministration;
 
 import java.util.*;
 
-public class Solution {
-    
-    //private static final int MAXSERVER = 8000;
+public class SolutionFaster {
     private static final int MAXADMIN = 100;
-   // private static final int MAXLINK = 100000;
-    
     private static final int MAXSERVER = 100000;
     private static final int MAXLINK = 500000;
             
@@ -83,49 +79,34 @@ public class Solution {
         }
     };
     
-    private static class Pair<A, B> {
-
-        public A first;
-        public B second;
-
-        private Pair(A first, B second) {
+    private static class PairIntInt implements Comparable<PairIntInt>  {
+        int first;
+        int second;
+        
+        int value;
+        Node node;
+        
+        public PairIntInt(int first, int second) {
             this.first = first;
             this.second = second;
         }
-
-        public static <A, B> Pair<A, B> of(A first, B second) {
-            return new Pair<A, B>(first, second);
+        
+        public PairIntInt(int first, int second, int value, Node node) {
+            this.first = first;
+            this.second = second;
+            this.value = value;
+            this.node = node;
         }
         
         @Override
-        public int hashCode() {
-            return 31 * hashcode(first) + hashcode(second);
+        public int compareTo(PairIntInt o) {
+            if ( this.first > o.first ) return 1;
+            if ( this.first < o.first ) return -1;
+            if ( this.second > o.second ) return 1;
+            if ( this.second < o.second ) return -1;
+            return 0;
         }
 
-        // TODO : move this to a helper class.
-        private static int hashcode(Object o) {
-            return o == null ? 0 : o.hashCode();
-        }
-
-        @Override
-        public boolean equals(Object obj) {
-            if (!(obj instanceof Pair))
-                return false;
-            if (this == obj)
-                return true;
-            return equal(first, ((Pair<?, ?>) obj).first)
-                    && equal(second, ((Pair<?, ?>) obj).second);
-        }
-
-        // TODO : move this to a helper class.
-        private boolean equal(Object o1, Object o2) {
-            return o1 == o2 || (o1 != null && o1.equals(o2));
-        }
-
-        @Override
-        public String toString() {
-            return "(" + first + ", " + second + ')';
-        }        
     }
     
     private static void cleanReverse(Node px) {
@@ -155,9 +136,8 @@ public class Solution {
         Node q = p.prx;
         Node r = q.prx;
         q.lft = p.rgt;
-        if ( q.lft != null) {
+        if ( q.lft != null) 
             q.lft.prx = q;
-        }
         p.rgt = q;
         q.prx = p;
         p.prx = r;
@@ -250,14 +230,12 @@ public class Solution {
             makeFirst(r);
 
         px.lft = l;
-        if (l != null)  {
+        if (l != null) 
             l.prx = px;
-        }
 
         px.rgt = r;
-        if (r != null) {
+        if (r != null) 
             r.prx = px;
-        }
 
         px.rev = false;
         px.prx = null;
@@ -270,12 +248,8 @@ public class Solution {
 
     private static void delEdge(int a, int b, int x, Node px) {
         splay(px);
-        if (px.lft != null) {
-            px.lft.prx = null;
-        }
-        if (px.rgt != null) { 
-            px.rgt.prx = null;
-        }
+        if (px.lft != null) px.lft.prx = null;
+        if (px.rgt != null) px.rgt.prx = null;
         table[a][x].del(px);
         table[b][x].del(px);
         px.lft = null;
@@ -301,7 +275,7 @@ public class Solution {
     }
 
     private static Lnk[][] table;
-    private static HashMap<Pair<Integer, Integer>, Pair<Integer, Node>> ehash;
+    private static PairIntInt[] ehash;
     
     private static Node[] frx;
 
@@ -313,8 +287,7 @@ public class Solution {
                 table[i][j] = new Lnk();
             }
         }
-        ehash = new HashMap<>();
-        
+
         frx = new Node[MAXLINK];
         
         Scanner scanner = new Scanner(System.in);
@@ -325,8 +298,8 @@ public class Solution {
         
         for ( int i = 0; i < M; ++i )
             frx[i] = new Node();
-        ehash.clear();
-        Pair<Integer, Integer> key;
+        
+        ehash = new PairIntInt[M];
         for ( int i = 0; i < M; ++i ) {
             int a = scanner.nextInt();
             int b = scanner.nextInt();
@@ -334,11 +307,13 @@ public class Solution {
             --a; 
             --b;
             --j;
-            key = Pair.of(a, b);
+
             Node ptx = frx[i];
-            ehash.put(key, Pair.of(j + 1, ptx));
+            ehash[i] = new PairIntInt(a, b, j + 1, ptx);
             addEdge(a, b, j, ptx);            
         }
+        Arrays.sort(ehash);        
+        PairIntInt key;
         Node px, qx, tx, ux;
         int rpx, rqx, rtx, rux, x;
         for ( int tCount = 0; tCount < T; tCount ++ ) {
@@ -350,9 +325,11 @@ public class Solution {
             --b;
             if (cmd == 1) {
                 --i;
-                key = Pair.of(a, b);
-                Pair<Integer, Node> data = ehash.get(key);
-                x = data != null ? data.first : 0;
+                
+                key = new PairIntInt(a, b);
+                int index = Arrays.binarySearch(ehash, key);
+                
+                x = index > -1 ? ehash[index].value : 0;
                 if (x == 0) { //not found in edges storage
                     System.out.println("Wrong link");
                     continue;
@@ -370,21 +347,20 @@ public class Solution {
                     System.out.println("Network redundancy");
                     continue;
                 }
-                px = data.second; //get the proper node (i.e. the node for edge  a <-> b)
+                px = ehash[index].node; //get the proper node (i.e. the node for edge  a <-> b)
 
                 delEdge(a, b, x, px);
 
                 addEdge(a, b, i, px);
 
-                data.first = i + 1; //update the company owning this cable
+                ehash[index].value = i + 1; //update the company owning this cable
 
                 System.out.println("Assignment done");
             } else if (cmd == 2) {
-                key = Pair.of(a, b);
+                key = new PairIntInt(a, b);
+                int index = Arrays.binarySearch(ehash, key);
 
-                Pair<Integer, Node> data = ehash.get(key);
-
-                px = data.second;
+                px = ehash[index].node;
 
                 splay(px);
 
@@ -398,11 +374,11 @@ public class Solution {
                     a = b;
                     b = tmp;
                 }
-                key = Pair.of(a, b);
-                Pair<Integer, Node> data = ehash.get(key);
+                key = new PairIntInt(a, b);
+                int index = Arrays.binarySearch(ehash, key);
                 
-                if (data != null && data.second != null && data.first == i + 1) {
-                    System.out.println( data.second.fx + " security devices placed");
+                if ( index > -1 && ehash[index].node != null && ehash[index].value == i + 1 ) {
+                    System.out.println( ehash[index].node.fx + " security devices placed");
                     continue;
                 }
                 Lnk al = table[a][i], bl = table[b][i];
@@ -438,12 +414,10 @@ public class Solution {
                         qx = al.b;
                         tx = bl.a;
                         ux = bl.b;
-                
                         rpx = xrank(px);
                         rqx = xrank(qx);
                         rtx = xrank(tx);
                         rux = xrank(ux);
-                        
                         if (rpx > rqx) {
                             Node tmp = px;
                             px = qx;
@@ -475,12 +449,11 @@ public class Solution {
                             Node tmp3 = qx;
                             qx = ux;
                             ux = tmp3;
-  
+                            
                             int tmp4 = rqx;
                             rqx = rux;
                             rux = tmp4;
                         }
-                    
                         /**
                          * At this point:
                          * a is to the left and b to the right

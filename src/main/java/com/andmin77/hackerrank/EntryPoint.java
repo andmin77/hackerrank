@@ -21,7 +21,7 @@ public class EntryPoint {
                     printDetails = true;
                 } else {
                     filtersKey.add(args[index]);
-                }                
+                }
             }
         }
         Class clazz = null;
@@ -70,7 +70,7 @@ public class EntryPoint {
         long maxDelay = 0;
         String testCaseWithMaxDelay = null;
         for ( String key : input.keySet() ) {
-            if ( filtersKey.size() == 0 || filtersKey.contains(key) ) {
+            if ( filtersKey.size() == 0 || (filtersKey.size() > 0 && !printDetails) || filtersKey.contains(key) ) {
                 File inputFile = input.get(key);
                 File outputFile = output.get(key);
                 if ( outputFile != null ) {

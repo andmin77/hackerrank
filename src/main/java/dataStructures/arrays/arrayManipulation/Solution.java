@@ -1,8 +1,7 @@
+package dataStructures.arrays.arrayManipulation;
+
 import java.io.*;
-import java.math.*;
-import java.text.*;
 import java.util.*;
-import java.util.regex.*;
 
 public class Solution {
 
@@ -21,7 +20,7 @@ public class Solution {
             long k = scanner.nextLong();
             
             array[a] += k;
-            
+
             if ( b + 1 <= n ) {
                 array[b + 1] -= k;
             }

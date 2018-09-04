@@ -99,22 +99,27 @@ public class EntryPoint {
                         List<String> outputRealLines = Files.readAllLines(consoleFile.toPath(), Charset.defaultCharset());
 
                         int failed = 0;
-                        if ( outputExpectedLines.size() == outputRealLines.size() ) {
-                            for ( int index = 0; index < outputExpectedLines.size(); index++ ) {
-                                if ( !outputExpectedLines.get(index).equals( outputRealLines.get(index) ) ) {
-                                    failed++;
-                                    if ( printDetails) {
-                                        if ( failed == 1 ) {
-                                            print("-", 100);
-                                            System.err.println( String.format(SFORMAT, "Row", "Your Output", "Expected Output") );
-                                            print("-", 100);
-                                        }
-                                        System.err.println( String.format(SFORMAT, index, outputRealLines.get(index), outputExpectedLines.get(index)) );
+                        int maxLines = Math.max( outputRealLines.size(), outputExpectedLines.size() );
+                        for ( int index = 0; index < maxLines; index++ ) {
+                            String expectedLine = "", realLine = "";
+                            if ( outputExpectedLines.size() > index ) {
+                                expectedLine = outputExpectedLines.get(index);                                        
+                            }
+                            if ( outputRealLines.size() > index ) {
+                                realLine = outputRealLines.get(index);                                        
+                            }
+                            if ( !expectedLine.equals(realLine) ) {
+                                failed++;   
+                                if ( printDetails) {
+                                    if ( failed == 1 ) {
+                                        print("-", 100);
+                                        System.err.println( String.format(SFORMAT, "Row", "Your Output", "Expected Output") );
+                                        print("-", 100);
                                     }
+                                    System.err.println( String.format(SFORMAT, index, realLine, expectedLine) );
                                 }
                             }
-                        } else {
-                            System.err.println("Failed: expected = " + outputExpectedLines.size() + ", real = " + outputRealLines.size());
+                            
                         }
                         if ( failed == 0 ) {
                             System.err.println("OK");
@@ -133,7 +138,6 @@ public class EntryPoint {
                         testCaseWithMaxDelay = key;
                     }
                     printLeft("*", 100, 10, "End Execute Test Case " + key + ": " + delay + " [mills]");
-                    //print("*", 50, "End Execute Test Case " + key + ": " + delay + " [mills]");
                     print("-", 100);
                 }
             }

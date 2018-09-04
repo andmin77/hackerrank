@@ -22,34 +22,30 @@ public class Solution {
                 matrix[row][col] = scanner.nextInt();
             }
         }
+        int[][] output = new int[M][N];
         int middle = Math.min(M, N) / 2;
-        List<List<Integer>> data = new ArrayList<>();
-        for ( int index = 0; index < middle; index++ ) {
-            List<Integer> e = new ArrayList<>();
+        int index = 0;
+        for ( int t = 0; t < middle; t++ ) {
+            List<Integer> data = new ArrayList<>();
             for ( int col = index; col < N - index; col++ ) {
-                e.add( matrix[index][col] );
+                data.add( matrix[index][col] );
             }            
             for ( int row = index + 1; row < M - index; row++ ) {
-                e.add( matrix[row][N - index - 1] );
+                data.add( matrix[row][N - index - 1] );
             }
             for ( int col = N - index - 1; col > index; col-- ) {
-                e.add( matrix[M - index - 1][col - 1] );
+                data.add( matrix[M - index - 1][col - 1] );
             } 
             for ( int row = M - index - 2; row > index; row-- ) {
-                e.add( matrix[row][index] );
+                data.add( matrix[row][index] );
             }
-            data.add( e );            
-        }        
-        int[][] output = new int[M][N];
-        int index = 0;
-        for ( List<Integer> e : data ) {
-            int rotation = R % e.size();
-            int[] t_array = new int[e.size()];
+            int rotation = R % data.size();
+            int[] t_array = new int[data.size()];
             for ( int i = 0; i < t_array.length; i++ ) {
-                if ( i + rotation < e.size() ) {
-                    t_array[i] = e.get(i + rotation);
+                if ( i + rotation < data.size() ) {
+                    t_array[i] = data.get(i + rotation);
                 } else {
-                    t_array[i] = e.get( rotation - ( e.size() - i) );
+                    t_array[i] = data.get( rotation - ( data.size() - i) );
                 }
             }
             Orientation orientation = Orientation.North;
